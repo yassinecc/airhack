@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
 import GoogleMapReact from 'google-map-react';
+import { Drawer } from 'antd';
+import 'antd/dist/antd.css';
 import { getTasks } from './ApiService';
 
-const Marker = ({ fullAddress }) => (
-  <button
-    style={{ backgroundColor: 'transparent', borderWidth: 0 }}
-    onClick={() => console.log('clic', fullAddress)}
-  >
+const Marker = ({ fullAddress, onPress }) => (
+  <button style={{ backgroundColor: 'transparent', borderWidth: 0 }} onClick={onPress}>
     <ion-icon size="large" name="pin" />
   </button>
 );
 
+const DrawerItem = ({ task }) => (task ? <div>{task.address}</div> : null);
+
 const myId = 1;
 
 class SimpleMap extends Component {
-  state = { tasks: [] };
+  state = { tasks: [], currentTaskId: null };
   static defaultProps = {
     center: {
       lat: 48.86,
@@ -39,10 +40,32 @@ class SimpleMap extends Component {
         >
           {myTasks.map(task => {
             return (
-              <Marker fullAddress={task.address} key={task.id} lat={task.lat} lng={task.lng} />
+              <Marker
+                onPress={() => {
+                  this.setState({ currentTaskId: task.id });
+                }}
+                fullAddress={task.address}
+                key={task.id}
+                lat={task.lat}
+                lng={task.lng}
+              />
             );
           })}
         </GoogleMapReact>
+        <Drawer
+          width="30vw"
+          showMask={false}
+          closable={false}
+          placement="right"
+          visible={this.state.currentTaskId !== null}
+          onClose={() => {
+            this.setState({ currentTaskId: null });
+          }}
+        >
+          <div>
+            <DrawerItem task={myTasks.find(task => task.id === this.state.currentTaskId)} />
+          </div>
+        </Drawer>
       </div>
     );
   }
