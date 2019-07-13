@@ -7,8 +7,6 @@ var taskersCount = body.taskersCount;
 var tasksCount = body.tasksCount;
 var tasks = body.tasks;
 
-// List containing all the checkers
-
 var graph = new Graph(tasksCount);
 
 function initGraph(){
@@ -32,8 +30,11 @@ function initTasks(){
 }
 
 function initEdges(){
-    for (var i in graph.adjList.keys){
-        // TODO
+    var list = graph.adjList.keys;
+    for (var i=0; i<list.length; i++){
+        for(var j=i+1; j<list.length; j++){
+            graph.addEdge(list[i], list[j]);
+        }
     }
 }
 
