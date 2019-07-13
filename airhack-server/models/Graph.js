@@ -24,7 +24,7 @@ class Graph {
    } 
 
    removeTask(task){
-      // TODO
+      this.adjList.delete(task);
    }
 
    removeTasks(tasks){
