@@ -1,6 +1,7 @@
 const { getDistance } = require('geolib');
 const moments = require('moments');
 
+// TODO : Utiliser les vrais données de l'API
 var body = JSON.parse({ "batchId": "1562940000_50_5", "taskersCount": 5, "tasksCount": 50, "tasks": [{ "dueTime": "16:30", "lat": 48.85554319120794, "lng": 2.3613359633447204, "assignee_id": null, "id": 6480 }, { "dueTime": "13:15", "lat": 48.85313729018271, "lng": 2.32256080014798, "assignee_id": null, "id": 9297 }, { "dueTime": "21:45", "lat": 48.838453425693785, "lng": 2.372673134911582, "assignee_id": null, "id": 1889 } ] })
 
 var taskersCount = body.taskersCount;
@@ -21,9 +22,7 @@ function initTasks(){
 
         var lat = currTask.lat;
         var lng = currTask.lng;
-
         var dueTime = currTask.dueTime;
-        var assignee_id = currTask.assignee_id;
         var id = currTask.id;
 
         graph.addTask(new Task(dueTime,id,lat,lng));
@@ -47,37 +46,42 @@ function getCoord(task){
     }
 }
 
-function sortTasksByTime(tasks){
-    tasks.sort(function(a,b){
-        return b.dueTime - a.dueTime;
-      });  
-    return tasks;
-}
-
 // Core Function
 function doMaxCheckIns(){
 
     sortedTask = sortTasksByTime(graph.adjList.keys);
     var currTime = sortedTask[0].dueTime;
-    var nodesToRem;
-    var currCheckerID = 1;
+    var nodesToRem = [];
 
-    for(i=1; i<=taskersCount; i++){
+    // For each checker
+    for(id=1; id<=taskersCount; id++){
+        
+        // Remove the visited nodes
         updateGraph(nodesToRem);
+
+        // Set the checker on the first comming due time not visited yet
         var currTask = sortedTask[0];
-        nodesToRem, sortedTask = searchMaxNodes(sortedTask, currTask, currTime, currCheckerID);
-        currCheckerID++;
+
+        // Visit the max number of nodes and update the checker id for each visited task
+        nodesToRem, sortedTask = searchMaxNodes(sortedTask, currTask, currTime, id);
     }
+}
+
+function sortTasksByTime(tasksList){
+    tasksList.sort(function(a,b){
+        return b.dueTime - a.dueTime;
+      });  
+    return tasksList;
 }
 
 function updateGraph(nodesToRem){
     graph.removeTasks(nodesToRem);
 }
 
-function searchMaxNodes(sortedTask, currTask, currTime, currCheckerID){
+function searchMaxNodes(taskList, currTask, currTime, currCheckerID){
     var tasksToRemove = [];
     
-    for(task in sortedTask){
+    for(task in taskList){
         var travelTime = graph.getTravelTime(currTask, task)
         arrivalTime = addTimes(currTime, travelTime);
 
@@ -85,13 +89,12 @@ function searchMaxNodes(sortedTask, currTask, currTime, currCheckerID){
             currTime = arrivalTime + addCheckInTime();
             writeIDinJSON(task.id,currCheckerID);
             tasksToRemove.push(task);
-            sortedTask.pop(task);
+            taskList.pop(task);
             currTask = task;
-        }
-        
+        }    
     }
 
-    return tasksToRemove, sortedTask;
+    return tasksToRemove, taskList;
 }
 
 function writeIDinJSON(taskID, checkerID){
