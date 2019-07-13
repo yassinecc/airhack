@@ -1,26 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import GoogleMapReact from 'google-map-react';
+import { getTasks } from './ApiService';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+const Marker = ({ fullAddress }) => (
+  <button
+    style={{ backgroundColor: 'transparent', borderWidth: 0 }}
+    onClick={() => console.log('clic', fullAddress)}
+  >
+    <ion-icon size="large" name="pin" />
+  </button>
+);
+
+const myId = 1;
+
+class SimpleMap extends Component {
+  state = { tasks: [] };
+  static defaultProps = {
+    center: {
+      lat: 48.86,
+      lng: 2.347639,
+    },
+    zoom: 13,
+  };
+  async componentDidMount() {
+    const tasks = await getTasks();
+    this.setState({ tasks: tasks });
+  }
+
+  render() {
+    const myTasks = this.state.tasks.filter(task => task.assignee_id === myId);
+    return (
+      // Important! Always set the container height explicitly
+      <div style={{ height: '100vh', width: '100%' }}>
+        <GoogleMapReact
+          bootstrapURLKeys={{ key: 'AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4' }}
+          defaultCenter={this.props.center}
+          defaultZoom={this.props.zoom}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+          {myTasks.map(task => {
+            return (
+              <Marker fullAddress={task.address} key={task.id} lat={task.lat} lng={task.lng} />
+            );
+          })}
+        </GoogleMapReact>
+      </div>
+    );
+  }
 }
 
-export default App;
+export default SimpleMap;
