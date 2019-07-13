@@ -41,7 +41,7 @@ class Graph {
       var list = this.adjList.get(task1)
       for(array in list){
          if(array[0] === task2){
-            return array[1];
+            return getDistance();
          }
       }
    }

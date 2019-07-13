@@ -9,6 +9,7 @@ var tasks = body.tasks;
 
 var graph = new Graph(tasksCount);
 
+// Init base
 function initGraph(){
     initTasks();
     initEdges();
@@ -33,8 +34,16 @@ function initEdges(){
     var list = graph.adjList.keys;
     for (var i=0; i<list.length; i++){
         for(var j=i+1; j<list.length; j++){
-            graph.addEdge(list[i], list[j]);
+            var distance = getDistance(getCoord(list[i]), getCoord(list[j]))
+            graph.addEdge(list[i], list[j], distance/10);
         }
+    }
+}
+
+function getCoord(task){
+    return {
+        latitude : task.lat,
+        longitude : task.lng
     }
 }
 
@@ -45,8 +54,9 @@ function sortTasksByTime(tasks){
     return tasks;
 }
 
+// Core Function
 function doMaxCheckIns(){
-    // Sort the tasks
+
     sortedTask = sortTasksByTime(graph.adjList.keys);
     var currTime = sortedTask[0].dueTime;
     var nodesToRem;
