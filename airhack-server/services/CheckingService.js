@@ -1,4 +1,5 @@
 const { getDistance } = require('geolib');
+const moments = require('moments');
 
 var body = JSON.parse({ "batchId": "1562940000_50_5", "taskersCount": 5, "tasksCount": 50, "tasks": [{ "dueTime": "16:30", "lat": 48.85554319120794, "lng": 2.3613359633447204, "assignee_id": null, "id": 6480 }, { "dueTime": "13:15", "lat": 48.85313729018271, "lng": 2.32256080014798, "assignee_id": null, "id": 9297 }, { "dueTime": "21:45", "lat": 48.838453425693785, "lng": 2.372673134911582, "assignee_id": null, "id": 1889 } ] })
 
@@ -7,7 +8,6 @@ var tasksCount = body.tasksCount;
 var tasks = body.tasks;
 
 // List containing all the checkers
-var checkers = [];
 
 var graph = new Graph(tasksCount);
 
@@ -33,12 +33,14 @@ function initTasks(){
 
 function initEdges(){
     for (var i in graph.adjList.keys){
-        
+        // TODO
     }
 }
 
 function sortTasksByTime(tasks){
-    tasks.sort()    
+    tasks.sort(function(a,b){
+        return b.dueTime - a.dueTime;
+      });  
     return tasks;
 }
 
@@ -46,21 +48,46 @@ function doMaxCheckIns(){
     // Sort the tasks
     sortedTask = sortTasksByTime(graph.adjList.keys);
     var currTime = sortedTask[0].dueTime;
-
     var nodesToRem;
-    checkers.forEach(element => {
+    var currCheckerID = 1;
+
+    for(i=1; i<=taskersCount; i++){
         updateGraph(nodesToRem);
-        nodesToRem = searchMaxNodes(element, currTime);
-    });
+        var currTask = sortedTask[0];
+        nodesToRem, sortedTask = searchMaxNodes(sortedTask, currTask, currTime, currCheckerID);
+        currCheckerID++;
+    }
 }
 
 function updateGraph(nodesToRem){
     graph.removeTasks(nodesToRem);
 }
 
-function searchMaxNodes(checker, sortedTask, currTime){
+function searchMaxNodes(sortedTask, currTask, currTime, currCheckerID){
+    var tasksToRemove = [];
+    
     for(task in sortedTask){
-        //var travelTime = 
-        //if(compareDates(task))
+        var travelTime = graph.getTravelTime(currTask, task)
+        arrivalTime = addTimes(currTime, travelTime);
+
+        if(compareDates(arrivalTime, task.dueTime)){
+            currTime = arrivalTime + addCheckInTime();
+            writeIDinJSON(task.id,currCheckerID);
+            tasksToRemove.push(task);
+            sortedTask.pop(task);
+            currTask = task;
+        }
+        
     }
+
+    return tasksToRemove, sortedTask;
+}
+
+function writeIDinJSON(taskID, checkerID){
+    body.tasks.forEach(element => {
+        if(element.id === taskID){
+            element.assignee_id = checkerID;
+            break;
+        }
+    });
 }
