@@ -1,5 +1,5 @@
 class Task{
-    constructor(dueTime, id, distance){
+    constructor(dueTime, id, lat, lng){
         this.dueTime = dueTime;
         this.id = id;
         this.lat = lat;

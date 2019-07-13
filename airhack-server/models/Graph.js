@@ -11,18 +11,18 @@ class Graph {
       this.adjList.set(v, []); 
    } 
 
-   addEdge(v, w) { 
+   addEdge(v, w, timeCost) { 
       // get the list for node v and put the 
       // node w denoting edge between v and w 
       this.adjList.get(v).push(w); 
-      this.adjList
+
       // Since graph is undirected, 
       // add an edge from w to v also 
       this.AdjList.get(w).push(v); 
    } 
 
    removeTask(task){
-      
+
    }
 
    removeTasks(tasks){
