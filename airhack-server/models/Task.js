@@ -1,13 +1,15 @@
-class Task{
-    constructor(dueTime, id, lat, lng){
-        this.dueTime = dueTime;
-        this.id = id;
-        this.lat = lat;
-        this.lng = lng;
-        this.assignee_id = null;
-    }
+class Task {
+  constructor(dueTime, id, lat, lng) {
+    this.dueTime = dueTime;
+    this.id = id;
+    this.lat = lat;
+    this.lng = lng;
+    this.assignee_id = null;
+  }
 
-    setChecker(id){
-        this.id = id;
-    }
+  setChecker(id) {
+    this.id = id;
+  }
 }
+
+module.exports = { Task: Task };

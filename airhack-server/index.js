@@ -2,11 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
+const axios = require('axios');
 const { getDistance } = require('geolib');
 const googleMapsClient = require('@google/maps').createClient({
   Promise: Promise,
   key: 'AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4',
 });
+const { process } = require('./services/CheckingService');
 const port = 5000;
 const EARTH_RADIUS = 6378;
 
@@ -41,12 +43,19 @@ app.get('/api/tasks', async (req, res) => {
 
 app.post('/api/hooks/incomingTasks', (req, res) => {
   const newBody = { ...req.body, tasks: assignTaskers(req.body.tasks) };
-  console.log(
-    getDistance(
-      { latitude: 48.882149, longitude: 2.305142 },
-      { latitude: 48.856815, longitude: 2.390498 }
-    )
-  );
+  const result = process(req.body);
+  console.log(JSON.stringify(result));
+  const config = {
+    headers: {
+      Authorization: 'Bearer orkLNOWUWw7IymoeCmjuXg8qEuymypKuQ0vZ0Z1F38UlV3LaiOx9TPb5GXdl',
+    },
+  };
+  axios
+    .post('http://airhack-api.herokuapp.com/api/submitTasks', { body: result }, config)
+    .then(({ data }) => console.log)
+    .catch(error => {
+      console.log(error);
+    });
   return res.send(newBody);
 });
 
