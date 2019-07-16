@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
 const { getDistance } = require('geolib');
@@ -15,6 +16,7 @@ const tasks = [
   { dueTime: '21:45', lat: 48.838453425693785, lng: 2.372673134911582, assignee_id: 2, id: 1889 },
 ];
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.get('/', (req, res) => res.send('Hello World!'));
