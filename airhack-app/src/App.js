@@ -28,7 +28,21 @@ class SimpleMap extends Component {
     this.setState({ tasks: tasks });
   }
 
+  getMyTasks = tasks => {
+    return this.state.tasks.filter(task => task.assignee_id === myId);
+  };
+
+  renderPolylines = (map, maps) => {
+    let geodesicPolyline = new maps.Polyline({
+      path: this.getMyTasks(this.state.tasks),
+    });
+    geodesicPolyline.setMap(map);
+  };
+
   render() {
+    if (this.map && this.maps) {
+      this.renderPolylines(this.map, this.maps);
+    }
     const myTasks = this.state.tasks.filter(task => task.assignee_id === myId);
     return (
       // Important! Always set the container height explicitly
@@ -37,6 +51,10 @@ class SimpleMap extends Component {
           bootstrapURLKeys={{ key: 'AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4' }}
           defaultCenter={this.props.center}
           defaultZoom={this.props.zoom}
+          onGoogleApiLoaded={({ map, maps }) => {
+            this.maps = maps;
+            this.map = map;
+          }}
         >
           {myTasks.map(task => {
             return (
