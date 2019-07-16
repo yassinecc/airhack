@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
-import GoogleMapReact from 'google-map-react';
+import { withScriptjs, withGoogleMap, GoogleMap, Marker, Polyline } from 'react-google-maps';
 import { Drawer } from 'antd';
 import 'antd/dist/antd.css';
 import { getTasks } from './ApiService';
 
-const Marker = ({ fullAddress, onPress }) => (
-  <button style={{ backgroundColor: 'transparent', borderWidth: 0 }} onClick={onPress}>
-    <ion-icon size="large" name="pin" />
-  </button>
-);
-
 const DrawerItem = ({ task }) => (task ? <div>{task.address}</div> : null);
 
 const myId = 1;
+
+const MyMapComponent = withScriptjs(
+  withGoogleMap(props => (
+    <GoogleMap defaultZoom={props.zoom} defaultCenter={props.center}>
+      {props.children}
+    </GoogleMap>
+  ))
+);
 
 class SimpleMap extends Component {
   state = { tasks: [], currentTaskId: null };
@@ -28,48 +30,42 @@ class SimpleMap extends Component {
     this.setState({ tasks: tasks });
   }
 
-  getMyTasks = tasks => {
+  getMyTasks = () => {
     return this.state.tasks.filter(task => task.assignee_id === myId);
   };
 
-  renderPolylines = (map, maps) => {
-    let geodesicPolyline = new maps.Polyline({
-      path: this.getMyTasks(this.state.tasks),
-    });
-    geodesicPolyline.setMap(map);
-  };
-
   render() {
-    if (this.map && this.maps) {
-      this.renderPolylines(this.map, this.maps);
-    }
-    const myTasks = this.state.tasks.filter(task => task.assignee_id === myId);
+    const myTasks = this.getMyTasks();
     return (
-      // Important! Always set the container height explicitly
-      <div style={{ height: '100vh', width: '100%' }}>
-        <GoogleMapReact
-          bootstrapURLKeys={{ key: 'AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4' }}
-          defaultCenter={this.props.center}
-          defaultZoom={this.props.zoom}
-          onGoogleApiLoaded={({ map, maps }) => {
-            this.maps = maps;
-            this.map = map;
-          }}
+      <div>
+        <MyMapComponent
+          isMarkerShown
+          googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4&v=3.exp&libraries=geometry,drawing,places"
+          loadingElement={<div style={{ height: `100%` }} />}
+          containerElement={<div style={{ height: `100vh` }} />}
+          mapElement={<div style={{ height: `100%` }} />}
+          zoom={this.props.zoom}
+          center={this.props.center}
         >
-          {myTasks.map(task => {
-            return (
-              <Marker
-                onPress={() => {
-                  this.setState({ currentTaskId: task.id });
-                }}
-                fullAddress={task.address}
-                key={task.id}
-                lat={task.lat}
-                lng={task.lng}
-              />
-            );
-          })}
-        </GoogleMapReact>
+          <Polyline
+            geodesic
+            path={myTasks}
+            options={{
+              path: myTasks,
+              strokeColor: 'teal',
+              strokeOpacity: 0.75,
+              strokeWeight: 2,
+            }}
+          />
+          {myTasks.map(task => (
+            <Marker
+              icon={{ url: '/assets/pin.svg' }}
+              key={task.id}
+              position={task}
+              onClick={() => this.setState({ currentTaskId: task.id })}
+            />
+          ))}
+        </MyMapComponent>
         <Drawer
           width="30vw"
           showMask={false}
